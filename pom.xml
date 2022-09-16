@@ -31,7 +31,7 @@
             <manifest>
               <addClasspath>true</addClasspath>
               <classpathPrefix>lib/</classpathPrefix>
-              <mainClass>main.java.pokerwinner.codefortynine.App</mainClass>
+              <mainClass>pokerwinner.codefortynine.App</mainClass>
             </manifest>
           </archive>
         </configuration>

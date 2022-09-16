@@ -1,4 +1,4 @@
-package main.java.pokerwinner.codefortynine;
+package pokerwinner.codefortynine;
 
 /**
  * Hello world!
