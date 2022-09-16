@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Hand {
-    List<Card> cards;
+    private List<Card> cards;
 
     public Hand() {
     }
@@ -18,6 +18,18 @@ public class Hand {
     public void addCard(Card card) {
         this.cards.add(card);
         cards.sort(Comparator.comparing(Card::getValue));
+    }
+
+    public int highest() {
+        return this.cards.get(this.cards.size() - 1).getValue().ordinal();
+    }
+
+    public int sum() {
+        int sum = 0;
+        for (Card card : this.cards) {
+            sum += card.getValue().ordinal();
+        }
+        return sum;
     }
 
     public List<Card> getCards() {

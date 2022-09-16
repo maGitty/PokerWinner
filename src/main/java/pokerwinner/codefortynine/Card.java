@@ -25,12 +25,15 @@ enum CardValue {
 
 public class Card {
     private CardValue value;
-
     private CardSuit suit;
 
     public Card(CardValue value, CardSuit suit) {
         this.setValue(value);
         this.setSuit(suit);
+    }
+
+    public int getOrdinal() {
+        return this.getValue().ordinal();
     }
 
     public CardValue getValue() {

@@ -19,12 +19,21 @@ enum HandRank {
     STRAIGHT_FLUSH // Five cards with consecutive value and same suit
 }
 
+class PrintWinner {
+    static void print(int winner) {
+        if (winner == 0) {
+            System.out.println("Split pot!");
+        }
+        System.out.printf("Hand %d wins!%n", winner);
+    }
+}
+
 public class HandEvaluator {
     public HandEvaluator() {
     }
 
     public Result rankHand(Hand hand) {
-        Map<CardValue, List<Card>> valueGroup = hand.cards.stream().collect(Collectors.groupingBy(Card::getValue));
+        Map<CardValue, List<Card>> valueGroup = hand.getCards().stream().collect(Collectors.groupingBy(Card::getValue));
         Map.Entry<CardValue, List<Card>> longestValueGroup = null;
         List<List<Card>> pairs = new ArrayList<>();
         for (Map.Entry<CardValue, List<Card>> entry : valueGroup.entrySet()) {
@@ -37,7 +46,7 @@ public class HandEvaluator {
         }
         assert longestValueGroup != null;
 
-        Map<CardSuit, List<Card>> suitGroup = hand.cards.stream().collect(Collectors.groupingBy(Card::getSuit));
+        Map<CardSuit, List<Card>> suitGroup = hand.getCards().stream().collect(Collectors.groupingBy(Card::getSuit));
         Map.Entry<CardSuit, List<Card>> longestSuitGroup = null;
         for (Map.Entry<CardSuit, List<Card>> entry : suitGroup.entrySet()) {
             if (longestSuitGroup == null || entry.getValue().size() > longestSuitGroup.getValue().size()) {
@@ -58,8 +67,7 @@ public class HandEvaluator {
             return new Result(HandRank.FOUR, longestValueGroup.getValue());
         } else if (longestValueGroup.getValue().size() == 3) {
             if (pairs.size() == 1) {
-                return new Result(HandRank.FULL, Stream.concat(longestValueGroup.getValue().stream(),
-                        pairs.get(0).stream()).collect(Collectors.toList()));
+                return new Result(HandRank.FULL, longestValueGroup.getValue());
             } else {
                 return new Result(HandRank.THREE, longestValueGroup.getValue());
             }
@@ -70,7 +78,7 @@ public class HandEvaluator {
         } else if (pairs.size() == 1) {
             return new Result(HandRank.PAIR, pairs.get(0));
         } else {
-            return new Result(HandRank.HIGH, hand.cards);
+            return new Result(HandRank.HIGH, hand.getCards());
         }
     }
 
@@ -78,10 +86,59 @@ public class HandEvaluator {
         Result rank1 = rankHand(hand1);
         Result rank2 = rankHand(hand2);
 
-        if (rank1.compareTo(rank2) > 0) {
-            System.out.println("Hand 1 wins");
-        } else if (rank1.compareTo(rank2) < 0) {
-            System.out.println("Hand 2 wins");
+        if (rank1.compareTo(rank2) > 0) { // Hand 1 has higher rank
+            PrintWinner.print(1);
+        } else if (rank1.compareTo(rank2) < 0) { // Hand 2 has higher rank
+            PrintWinner.print(2);
+        } else { // Both hands have same rank
+            // For hands with straight, just use the highest card for comparison
+            if (rank1.getRank() == HandRank.STRAIGHT_FLUSH || rank1.getRank() == HandRank.STRAIGHT) {
+                if (hand1.highest() > hand2.highest()) {
+                    PrintWinner.print(1);
+                } else if (hand1.highest() < hand2.highest()) {
+                    PrintWinner.print(2);
+                } else {
+                    PrintWinner.print(0);
+                }
+            // For hands with quadruple or full house,
+            } else if (rank1.getRank() == HandRank.FOUR ||
+                    rank1.getRank() == HandRank.FULL ||
+                    rank1.getRank() == HandRank.THREE) {
+                if (hand1.sum() > hand2.sum()) {
+                    PrintWinner.print(1);
+                } else if (hand1.sum() < hand2.sum()) {
+                    PrintWinner.print(2);
+                } else {
+                    PrintWinner.print(0);
+                }
+            // For hands with pairs
+            } else if (rank1.getRank() == HandRank.PAIR || rank1.getRank() == HandRank.PAIR2) {
+                List<Card> notPair1 = new ArrayList<>(hand1.getCards());
+                for (Card card : rank1.getCards()) notPair1.remove(card);
+                int sum1 = notPair1.stream().mapToInt(Card::getOrdinal).sum();
+
+                List<Card> notPair2 = new ArrayList<>(hand2.getCards());
+                for (Card card : rank2.getCards()) notPair2.remove(card);
+                int sum2 = notPair2.stream().mapToInt(Card::getOrdinal).sum();
+
+                if (sum1 > sum2) {
+                    PrintWinner.print(1);
+                } else if (sum1 < sum2) {
+                    PrintWinner.print(2);
+                } else {
+                    PrintWinner.print(0);
+                }
+            // For hands with flush or high card
+            } else {
+                for (int i = hand1.getCards().size() - 1; i >= 0; i--) {
+                    if (hand1.getCards().get(i).getOrdinal() > hand2.getCards().get(i).getOrdinal()) {
+                        PrintWinner.print(1);
+                    } else if (hand1.getCards().get(i).getOrdinal() < hand2.getCards().get(i).getOrdinal()) {
+                        PrintWinner.print(2);
+                    }
+                }
+                PrintWinner.print(0);
+            }
         }
     }
 
@@ -90,7 +147,7 @@ public class HandEvaluator {
         List<Card> currentList = null;
         Card lastCard = null;
 
-        for (Card card: hand.cards) {
+        for (Card card: hand.getCards()) {
             if (lastCard == null) {
                 currentList = new ArrayList<>();
                 lastCard = card;
