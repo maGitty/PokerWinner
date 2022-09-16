@@ -1,6 +1,7 @@
 package pokerwinner.codefortynine;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Hand {
     List<Card> cards;
@@ -9,6 +10,7 @@ public class Hand {
     }
 
     public Hand(List<Card> cards) {
+        cards = new ArrayList<>(cards);
         cards.sort(Comparator.comparing(Card::getValue));
         this.setCards(cards);
     }
